@@ -9,10 +9,15 @@ namespace TesteE_turn.Entidades
     {
         private Dictionary<string, Dictionary<string, Aresta>> _grafo;
         private List<Aresta> _arestas;
+        private Dictionary<string, Dictionary<string, int>> _chacheDts;
+        private Dictionary<string, Dictionary<string, string>> _chacheRots;
+
 
         public Grafo(List<Aresta> arestas)
         {
             _arestas = arestas;
+            _chacheDts = new Dictionary<string, Dictionary<string, int>>();
+            _chacheRots = new Dictionary<string, Dictionary<string, string>>();
             Criar(arestas);
         }
 
@@ -107,16 +112,16 @@ namespace TesteE_turn.Entidades
 
             int contador = 0;
 
-            foreach (var elem in _grafo[origem].Keys)
-            {
-                contador += ContadorDeRotasDistanciaMaxima(elem, destino, distanciaMax - _grafo[origem][elem].Distancia, rota + origem, printRota);
-            }
-
             if (distanciaMax > 0 && origem.Equals(destino) && !string.IsNullOrEmpty(rota))
             {
                 if (printRota)
                     Console.WriteLine(rota + destino);
                 contador++;
+            }
+
+            foreach (var elem in _grafo[origem].Keys)
+            {
+                contador += ContadorDeRotasDistanciaMaxima(elem, destino, distanciaMax - _grafo[origem][elem].Distancia, rota + origem, printRota);
             }
 
             return contador;
@@ -156,38 +161,49 @@ namespace TesteE_turn.Entidades
 
         private int CalcularMenorCaminhoEntrePontosDistintos(string nodoInicial, string nodoFinal)
         {
-            var dt = CriarListaDeNodosExistentes<int>(0);
-            var rot = CriarListaDeNodosExistentes<string>(string.Empty);
+            Dictionary<string, int> dt;
+            Dictionary<string, string> rot;
+            _chacheDts.TryGetValue(nodoInicial, out dt);
+            _chacheRots.TryGetValue(nodoInicial, out rot);
 
-            dt[nodoInicial] = 0;
-            rot[nodoInicial] = nodoInicial;
-
-            foreach (var nodo in _grafo.Keys.Where(e => !e.Equals(nodoInicial)))
-                dt[nodo] = int.MaxValue;
-
-            Queue<string> fila = new Queue<string>();
-            fila.Enqueue(nodoInicial);
-
-            while (fila.Count != 0)
+            if (dt == null && rot == null)
             {
-                var i = fila.Dequeue();
+                dt = CriarListaDeNodosExistentes<int>(0);
+                rot = CriarListaDeNodosExistentes<string>(string.Empty);
 
-                foreach (var j in _grafo[i].Keys)
+                dt[nodoInicial] = 0;
+                rot[nodoInicial] = nodoInicial;
+
+                foreach (var nodo in _grafo.Keys.Where(e => !e.Equals(nodoInicial)))
+                    dt[nodo] = int.MaxValue;
+
+                Queue<string> fila = new Queue<string>();
+                fila.Enqueue(nodoInicial);
+
+                while (fila.Count != 0)
                 {
-                    var distancia = dt[j] < (dt[i] + _grafo[i][j].Distancia) ? dt[j] : (dt[i] + _grafo[i][j].Distancia);
-                    if (distancia < dt[j])
+                    var i = fila.Dequeue();
+
+                    foreach (var j in _grafo[i].Keys)
                     {
-                        dt[j] = distancia;
-                        rot[j] = i;
-                        fila.Enqueue(j);
+                        var distancia = dt[j] < (dt[i] + _grafo[i][j].Distancia) ? dt[j] : (dt[i] + _grafo[i][j].Distancia);
+                        if (distancia < dt[j])
+                        {
+                            dt[j] = distancia;
+                            rot[j] = i;
+                            fila.Enqueue(j);
+                        }
                     }
                 }
-            }
 
-            //ImprimirDictionary(dt, "DT");
-            //ImprimirDictionary(rot, "ROT");
-            if (string.IsNullOrEmpty(rot[nodoFinal]))
-                throw new RotaInexistenteException($"Rota '{nodoInicial}' para '{nodoFinal}' não existe.");
+                //ImprimirDictionary(dt, "DT");
+                //ImprimirDictionary(rot, "ROT");
+                if (string.IsNullOrEmpty(rot[nodoFinal]))
+                    throw new RotaInexistenteException($"Rota '{nodoInicial}' para '{nodoFinal}' não existe.");
+
+                _chacheDts.Add(nodoInicial, dt);
+                _chacheRots.Add(nodoInicial, rot);
+            }
 
             return dt[nodoFinal];
         }
