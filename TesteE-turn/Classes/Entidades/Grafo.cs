@@ -1,60 +1,67 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using TesteE_turn.Entidades.Exceções;
+using TesteE_turn.Classes.Excecoes;
 
 namespace TesteE_turn.Entidades
 {
     public class Grafo
     {
-        private Dictionary<string, Dictionary<string, Aresta>> _grafo;
-        private List<Aresta> _arestas;
+
+        private Dictionary<string, Dictionary<string, Arco>> _grafo;
+        private List<Arco> _arcos;
         private Dictionary<string, Dictionary<string, int>> _chacheDts;
         private Dictionary<string, Dictionary<string, string>> _chacheRots;
+        private HashSet<string> _cidades;
 
-
-        public Grafo(List<Aresta> arestas)
+        public Grafo(List<Arco> arcos)
         {
-            _arestas = arestas;
+            _arcos = arcos;
             _chacheDts = new Dictionary<string, Dictionary<string, int>>();
             _chacheRots = new Dictionary<string, Dictionary<string, string>>();
-            Criar(arestas);
+            _cidades = new HashSet<string>();
+            Criar(arcos);
         }
 
         #region MÉTODOS
-        private void Criar(List<Aresta> arestas)
+        private void Criar(List<Arco> arcos)
         {
-            _grafo = new Dictionary<string, Dictionary<string, Aresta>>();
+            _grafo = new Dictionary<string, Dictionary<string, Arco>>();
 
-            foreach (var aresta in arestas)
+            foreach (var arco in arcos)
             {
-                Dictionary<string, Aresta> aux;
-                _grafo.TryGetValue(aresta.Origem, out aux);
+                Dictionary<string, Arco> aux;
+                _grafo.TryGetValue(arco.Origem, out aux);
                 if (aux == null)
-                    _grafo.Add(aresta.Origem, new Dictionary<string, Aresta>());
-                _grafo[aresta.Origem][aresta.Destino] = aresta;
+                    _grafo.Add(arco.Origem, new Dictionary<string, Arco>());
+                _grafo[arco.Origem][arco.Destino] = arco;
+
+                _cidades.Add(arco.Origem);
+                _cidades.Add(arco.Destino);
             }
         }
 
-        /// <summary>
-        /// Calcula a distância de uma determinada rota.
-        /// </summary>
-        /// <param name="cidades">Listas das cidades.</param>
-        /// <returns>O valor da distância referente a rota desejada.</returns>
-        /// <exception cref="RotaInexistenteException">Essa exceção é gerada quando não existe a rota informada.</exception>
         private int CalcularDistanciaRota(List<string> cidades)
         {
             int result = 0;
 
             for (int i = 0; i < cidades.Count - 1; i++)
             {
-                Aresta aresta;
-                _grafo[cidades[i]].TryGetValue(cidades[i + 1], out aresta);
+                Dictionary<string, Arco> aux;
+                _grafo.TryGetValue(cidades[i], out aux);
 
-                if (aresta == null)
-                    throw new RotaInexistenteException("Rota não existente");
+                if (aux == null)
+                    throw new CidadeInexistenteException($"A cidade '{cidades[i]}' informada não existe, ou não cotem rota para outra cidade.");
                 else
-                    result += aresta.Distancia;
+                {
+                    Arco arco;
+                    aux.TryGetValue(cidades[i + 1], out arco);
+
+                    if (arco == null)
+                        throw new RotaInexistenteException();
+                    else
+                        result += arco.Distancia;
+                }
             }
 
             return result;
@@ -69,7 +76,7 @@ namespace TesteE_turn.Entidades
             {
                 resultado = $"{resultado}{CalcularDistanciaRota(cidades)}";
             }
-            catch (RotaInexistenteException ex)
+            catch (ObjetoInexistenteException ex)
             {
                 resultado = $"{resultado}{ex.Message}";
             }
@@ -80,27 +87,71 @@ namespace TesteE_turn.Entidades
             return resultado;
         }
 
-        public int ContadorDeRotas(string origem, string destino, int qtdMaximaArestasPercorridas)
+        public string ContarRotasMaxParadas(string origem, string destino, int qtdMaxParadas)
         {
-            if (qtdMaximaArestasPercorridas == 0 && origem == destino)
+            var resultado = string.Empty;
+
+            try
+            {
+                resultado = ContadorDeRotasMaxParadas(origem, destino, qtdMaxParadas).ToString();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+            return resultado;
+        }
+
+        public int ContadorDeRotasMaxParadas(string origem, string destino, int qtdMaxParadas)
+        {
+            Dictionary<string, Arco> descendentesOrigem;
+            _grafo.TryGetValue(origem, out descendentesOrigem);
+
+            if (descendentesOrigem == null)
+                return 0;
+
+            if (qtdMaxParadas == 0 && origem == destino)
                 return 1;
-            if (qtdMaximaArestasPercorridas == 1 && _grafo[origem].Any(e => e.Key.Equals(destino)))
+            if (qtdMaxParadas == 1 && descendentesOrigem.Any(e => e.Key.Equals(destino)))
                 return 1;
-            if (qtdMaximaArestasPercorridas <= 0)
+            if (qtdMaxParadas <= 0)
                 return 0;
 
             int contador = 0;
 
-            foreach (var elem in _grafo[origem].Keys)
+            foreach (var elem in descendentesOrigem.Keys)
             {
-                contador += ContadorDeRotas(elem, destino, qtdMaximaArestasPercorridas - 1);
+                contador += ContadorDeRotasMaxParadas(elem, destino, qtdMaxParadas - 1);
             }
 
             return contador;
         }
 
-        public int ContadorDeRotasDistanciaMaxima(string origem, string destino, int distanciaMax, string rota = "", bool printRota = false)
+        public string ContarRotasDistanciaMaxima(string origem, string destino, int distanciaMax, bool printRota = false)
         {
+            string resultado = string.Empty;
+
+            try
+            {
+                resultado = ContadorDeRotasDistanciaMaxima(origem, destino, distanciaMax, printRota).ToString();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+            return resultado;
+        }
+
+        public int ContadorDeRotasDistanciaMaxima(string origem, string destino, int distanciaMax, bool printRota, string rota = "")
+        {
+            Dictionary<string, Arco> descendentesOrigem;
+            _grafo.TryGetValue(origem, out descendentesOrigem);
+
+            if (descendentesOrigem == null)
+                return 0;
+
             if (distanciaMax == 0 && origem.Equals(destino))
             {
                 if (printRota)
@@ -119,9 +170,9 @@ namespace TesteE_turn.Entidades
                 contador++;
             }
 
-            foreach (var elem in _grafo[origem].Keys)
+            foreach (var elem in descendentesOrigem.Keys)
             {
-                contador += ContadorDeRotasDistanciaMaxima(elem, destino, distanciaMax - _grafo[origem][elem].Distancia, rota + origem, printRota);
+                contador += ContadorDeRotasDistanciaMaxima(elem, destino, distanciaMax - descendentesOrigem[elem].Distancia, printRota, rota + origem);
             }
 
             return contador;
@@ -133,6 +184,11 @@ namespace TesteE_turn.Entidades
 
             try
             {
+                if (!_cidades.Contains(nodoInicial))
+                    throw new CidadeInexistenteException(nodoInicial, true);
+                if (!_cidades.Contains(nodoFinal))
+                    throw new CidadeInexistenteException(nodoFinal, true);
+
                 //Ciclo
                 if (nodoFinal.Equals(nodoInicial))
                 {
@@ -143,7 +199,7 @@ namespace TesteE_turn.Entidades
                     resultado = CalcularMenorCaminhoEntrePontosDistintos(nodoInicial, nodoFinal).ToString();
                 }
             }
-            catch (RotaInexistenteException ex)
+            catch (ObjetoInexistenteException ex)
             {
                 resultado = ex.Message;
             }
@@ -183,10 +239,12 @@ namespace TesteE_turn.Entidades
                 while (fila.Count != 0)
                 {
                     var i = fila.Dequeue();
+                    Dictionary<string, Arco> descendentesI;
+                    _grafo.TryGetValue(i, out descendentesI);
 
-                    foreach (var j in _grafo[i].Keys)
+                    foreach (var j in descendentesI.Keys)
                     {
-                        var distancia = dt[j] < (dt[i] + _grafo[i][j].Distancia) ? dt[j] : (dt[i] + _grafo[i][j].Distancia);
+                        var distancia = dt[j] < (dt[i] + descendentesI[j].Distancia) ? dt[j] : (dt[i] + descendentesI[j].Distancia);
                         if (distancia < dt[j])
                         {
                             dt[j] = distancia;

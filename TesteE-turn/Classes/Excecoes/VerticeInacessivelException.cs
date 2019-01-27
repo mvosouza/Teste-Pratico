@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TesteE_turn.Entidades.Exceções
+namespace TesteE_turn.Classes.Excecoes
 {
     public class VerticeInacessivelException : Exception
     {

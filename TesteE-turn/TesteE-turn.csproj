@@ -43,10 +43,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Classes\Entidades\Aresta.cs" />
+    <Compile Include="Classes\Entidades\Arco.cs" />
     <Compile Include="Classes\Entidades\Grafo.cs" />
-    <Compile Include="Classes\Exceções\RotaInexistenteException.cs" />
-    <Compile Include="Classes\Exceções\VerticeInacessivelException.cs" />
+    <Compile Include="Classes\Excecoes\CidadeInexistenteException.cs" />
+    <Compile Include="Classes\Excecoes\ObjetoInexistenteException.cs" />
+    <Compile Include="Classes\Excecoes\RotaInexistenteException.cs" />
+    <Compile Include="Classes\Excecoes\VerticeInacessivelException.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

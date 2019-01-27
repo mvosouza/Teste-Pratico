@@ -1,12 +1,12 @@
 ﻿namespace TesteE_turn.Entidades
 {
-    public class Aresta
+    public class Arco
     {
         private string _origem;
         private string _destino;
         private int _distancia;
 
-        public Aresta(string origem, string destino, int distancia)
+        public Arco(string origem, string destino, int distancia)
         {
             _origem = origem;
             _distancia = distancia;

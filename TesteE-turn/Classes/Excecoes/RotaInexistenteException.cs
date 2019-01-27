@@ -1,12 +1,12 @@
 ﻿using System;
 
-namespace TesteE_turn.Entidades.Exceções
+namespace TesteE_turn.Classes.Excecoes
 {
-    public class RotaInexistenteException : Exception
+    public class RotaInexistenteException : ObjetoInexistenteException
     {
-        public RotaInexistenteException() : base()
+        public RotaInexistenteException() : base("Rota não existente")
         {
-
+           
         }
 
         public RotaInexistenteException(string message) : base(message)
