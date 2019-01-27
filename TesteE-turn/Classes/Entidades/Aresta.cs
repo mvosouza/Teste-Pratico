@@ -5,14 +5,12 @@
         private string _origem;
         private string _destino;
         private int _distancia;
-        private bool _jaVisitada;
 
         public Aresta(string origem, string destino, int distancia)
         {
             _origem = origem;
             _distancia = distancia;
             _destino = destino;
-            _jaVisitada = false;
         }
 
         public string Origem
@@ -33,10 +31,5 @@
             private set { _distancia = value; }
         }
 
-        public bool jaVisitada
-        {
-            get { return _jaVisitada; }
-            set { _jaVisitada = value; }
-        }
     }
 }
