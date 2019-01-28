@@ -87,13 +87,13 @@ namespace TesteE_turn.Entidades
             return resultado;
         }
 
-        public string ContarRotasMaxParadas(string origem, string destino, int qtdMaxParadas)
+        public string ContarRotasValorExatoDeParadas(string origem, string destino, int qtdMaxParadas, bool printRota = false)
         {
             var resultado = string.Empty;
 
             try
             {
-                resultado = ContadorDeRotasMaxParadas(origem, destino, qtdMaxParadas).ToString();
+                resultado = ContadorDeRotasMaxParadas(origem, destino, qtdMaxParadas, printRota, true).ToString();
             }
             catch (Exception ex)
             {
@@ -103,7 +103,23 @@ namespace TesteE_turn.Entidades
             return resultado;
         }
 
-        public int ContadorDeRotasMaxParadas(string origem, string destino, int qtdMaxParadas)
+        public string ContarRotasAteValorMaxParadas(string origem, string destino, int qtdMaxParadas, bool printRota = false)
+        {
+            var resultado = string.Empty;
+
+            try
+            {
+                resultado = ContadorDeRotasMaxParadas(origem, destino, qtdMaxParadas, printRota).ToString();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+            return resultado;
+        }
+
+        public int ContadorDeRotasMaxParadas(string origem, string destino, int qtdMaxParadas, bool printRota, bool valorExatoDeParadas = false, string rota = "")
         {
             Dictionary<string, Arco> descendentesOrigem;
             _grafo.TryGetValue(origem, out descendentesOrigem);
@@ -111,10 +127,12 @@ namespace TesteE_turn.Entidades
             if (descendentesOrigem == null)
                 return 0;
 
-            if (qtdMaxParadas == 0 && origem == destino)
+            if (qtdMaxParadas == 0 && origem.Equals(destino))
+            {
+                if (printRota)
+                    Console.WriteLine(rota + destino);
                 return 1;
-            if (qtdMaxParadas == 1 && descendentesOrigem.Any(e => e.Key.Equals(destino)))
-                return 1;
+            }
             if (qtdMaxParadas <= 0)
                 return 0;
 
@@ -122,7 +140,14 @@ namespace TesteE_turn.Entidades
 
             foreach (var elem in descendentesOrigem.Keys)
             {
-                contador += ContadorDeRotasMaxParadas(elem, destino, qtdMaxParadas - 1);
+                contador += ContadorDeRotasMaxParadas(elem, destino, qtdMaxParadas - 1, printRota, valorExatoDeParadas, rota + origem);
+            }
+
+            if (!valorExatoDeParadas && qtdMaxParadas > 0 && origem.Equals(destino) && !string.IsNullOrEmpty(rota))
+            {
+                if (printRota)
+                    Console.WriteLine(rota + destino);
+                contador++;
             }
 
             return contador;

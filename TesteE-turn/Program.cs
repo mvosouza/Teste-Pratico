@@ -36,9 +36,9 @@ namespace TesteE_turn
                 //Q5
                 System.Console.WriteLine($"5: {g.CalcularDistanciaRota(new List<string> { "A", "E", "D" })}");
                 //Q6
-                System.Console.WriteLine($"6: {g.ContarRotasMaxParadas("C", "C", 4)}");
+                System.Console.WriteLine($"6: {g.ContarRotasAteValorMaxParadas("C", "C", 3)}");
                 //Q7
-                System.Console.WriteLine($"7: {g.ContarRotasMaxParadas("A", "C", 4)}");
+                System.Console.WriteLine($"7: {g.ContarRotasValorExatoDeParadas("A", "C", 4)}");
                 //Q8
                 System.Console.WriteLine($"8: {g.CalcularMenorCaminho("A", "C")}");
                 //Q9
